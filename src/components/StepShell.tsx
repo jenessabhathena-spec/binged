@@ -10,11 +10,12 @@ type Props = {
   back?: string;
   next?: { href: string; label: string };
   secondary?: { href: string; label: string };
+  preview?: boolean; // show the "built in milestone X" note (false once the page is real)
   children?: ReactNode;
 };
 
 // One screen of the flow: header, progress, content, and a sticky action bar. Mobile-first (360 px up).
-export function StepShell({ step, flow = "organiser", title, subtitle, back, next, secondary, children }: Props) {
+export function StepShell({ step, flow = "organiser", title, subtitle, back, next, secondary, preview = true, children }: Props) {
   const s = STEPS[step];
   const pos = flow === "none" ? null : position(step, flow === "friend" ? FRIEND_FLOW : ORGANISER_FLOW);
   return (
@@ -47,9 +48,11 @@ export function StepShell({ step, flow = "organiser", title, subtitle, back, nex
         <h1 className="text-2xl font-bold leading-tight">{title ?? s.title}</h1>
         {subtitle && <p className="mt-1.5 text-muted">{subtitle}</p>}
         <div className="mt-5 space-y-3">{children}</div>
-        <p className="mt-6 rounded-xl border border-dashed border-line px-3 py-2 text-xs text-muted">
-          Preview (M0): this page is a placeholder for navigation. It is built in milestone {s.milestone}.
-        </p>
+        {preview && (
+          <p className="mt-6 rounded-xl border border-dashed border-line px-3 py-2 text-xs text-muted">
+            Preview: this page is a placeholder for navigation. It is built in milestone {s.milestone}.
+          </p>
+        )}
       </main>
 
       {(next || secondary) && (

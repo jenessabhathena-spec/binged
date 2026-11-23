@@ -1,19 +1,35 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import { StepShell, Planned } from "@/components/StepShell";
+import Link from "next/link";
+import { StepShell } from "@/components/StepShell";
+import { Loading } from "@/components/Loading";
+import { requireUser } from "@/lib/auth";
+import { signOut } from "@/app/actions/auth";
+import { ProfileForm } from "./ProfileForm";
 
 export const metadata: Metadata = { title: "Your profile" };
 
 export default function Profile() {
   return (
-    <StepShell step="profile" subtitle="So we can work out fair travel times." back="/" next={{ href: "/preferences", label: "Save and continue" }}>
-      <Planned
-        items={[
-          "Name, filled in from Google (you can edit it). Email shown read-only.",
-          "Home area: search a locality and drop a pin on the map (Bengaluru only).",
-          "Work area (optional), same picker.",
-          "No street address is ever asked for: an area and a pin are enough.",
-        ]}
-      />
+    <Suspense fallback={<Loading />}>
+      <ProfileStep />
+    </Suspense>
+  );
+}
+
+async function ProfileStep() {
+  const user = await requireUser();
+  return (
+    <StepShell step="profile" subtitle="So we can work out fair travel times." back="/" preview={false}>
+      <ProfileForm profile={user.profile} />
+      <form action={signOut} className="pt-2 text-center">
+        <button className="text-sm text-muted underline">Not you? Sign out</button>
+      </form>
+      {user.mode === "demo" && (
+        <p className="rounded-xl border border-dashed border-line px-3 py-2 text-xs text-muted">
+          Demo mode: your profile is kept in a signed cookie in this browser. <Link href="/privacy" className="underline">Privacy</Link>
+        </p>
+      )}
     </StepShell>
   );
 }

@@ -1,9 +1,21 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { StepShell, Planned } from "@/components/StepShell";
+import { Loading } from "@/components/Loading";
+import { requireProfile } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Your tastes" };
 
 export default function Preferences() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <PreferencesStep />
+    </Suspense>
+  );
+}
+
+async function PreferencesStep() {
+  await requireProfile(); // needs a signed-in person with a home area
   return (
     <StepShell step="preferences" subtitle="Two minutes. Skip anything." back="/profile" next={{ href: "/home", label: "Save and continue" }}>
       <Planned
