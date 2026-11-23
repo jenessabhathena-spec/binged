@@ -49,7 +49,7 @@ async function HomeStep() {
           <ul className="space-y-2" data-testid="plan-list">
             {plans.map((p) => (
               <li key={p.id}>
-                <Link href={`/plan/${p.id}/share`} className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">
+                <Link href={`/plan/${p.id}/lobby`} className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{p.name}</p>
                     <p className="text-sm text-muted">{formatWhen(p.startsAt)} · {p.partySize} people</p>

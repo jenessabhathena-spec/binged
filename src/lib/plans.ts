@@ -3,6 +3,7 @@
 
 import { config } from "@/config";
 import { inCity, roundCoord } from "@/lib/areas";
+import type { Pool } from "@/lib/pool";
 import type { AreaPin } from "@/lib/profile";
 
 export type SearchMode = "anywhere_fair" | "area";
@@ -21,6 +22,13 @@ export type Plan = {
   status: PlanStatus;
   inviteCode: string;
   createdAt: number;
+  // Set as the plan moves along (M4+). "group_swiping" = everyone is swiping the deck.
+  pool?: Pool;
+  pickingStartedAt?: number;
+  votingClosedAt?: number;
+  tiebreak?: { optionIds: [string, string]; endsAt: number; organiserChoice?: string };
+  winnerPlaceId?: string;
+  winnerVia?: "full_match" | "only_option" | "tiebreak" | "organiser";
 };
 
 // What anyone holding the invite link may see. Never the organiser's profile, area or preferences.

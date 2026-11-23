@@ -5,6 +5,9 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { encodeSession, newMockSession, MOCK_COOKIE, cookieOptions } from "@/lib/mock-session";
 
+// Only same-site paths are allowed after sign-in (never "//host" or "/\host"), so this can't bounce anyone elsewhere.
+const safeNext = (n: FormDataEntryValue | null) => (typeof n === "string" && /^\/[A-Za-z0-9]/.test(n) ? n : "/profile");
+
 export type DemoSignInState = { error?: string; name?: string; email?: string };
 
 // Demo stand-in for "Continue with Google" while no Supabase project exists. It asks for exactly what
@@ -16,7 +19,7 @@ export async function demoSignIn(_prev: DemoSignInState, fd: FormData): Promise<
   if (!name || name.length > 60) return { error: "Enter your name (up to 60 characters)", name, email };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) return { error: "Enter a valid email address", name, email };
   (await cookies()).set(MOCK_COOKIE, encodeSession(newMockSession(name, email)), cookieOptions);
-  redirect("/profile");
+  redirect(safeNext(fd.get("next")));
 }
 
 export async function signOut() {

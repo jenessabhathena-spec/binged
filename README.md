@@ -12,7 +12,14 @@ that's fairest for the whole group. Full spec: [SPEC.md](SPEC.md).
 | **M1** Auth + profile | Built and tested in demo mode: Continue with Google (real OAuth path written, untested until Supabase exists), profile with home and work area (search, built-in map, current location), no address field. Needs your Supabase and Google keys to run for real: see "Turning on real sign-in". |
 | **M2** Preferences | Built and tested in demo mode: cuisines, diet, spice, budget (private), vibe, dealbreakers and max travel time. Every question is optional, saved, and editable from Home and Profile. Needs `supabase/migrations/0002_preferences.sql` once Supabase exists. |
 | **M3** Create plan + WhatsApp share | Built and tested in demo mode: name, date and time (Bengaluru time), a specific area or "anywhere fair", party size 2-8 and an answers deadline. The share page has a green WhatsApp button (`wa.me`), a copy-link button and the message preview. The invite link opens for a signed-out visitor, with a link preview (title, "{name} invited you", picture) and one identical "isn't available" page for wrong, expired or closed links. Home lists your plans. Needs `supabase/migrations/0003_plans.sql` once Supabase exists. |
-| M4-M10 | Not started. Each page shows what it will do and which milestone builds it. |
+| **M4** Friend join + lobby | Built and tested in demo mode with three people in three separate browser identities. A friend joins from the invite link with Google or just a first name (no account), fills a 30-second form (starting area or pin, private budget, dealbreakers, mood), and sits in a lobby that updates by itself (polling every 3 s in demo mode). The lobby shows first names and "answered" only, plus one meeting area for everyone. Picking starts when the organiser taps Start (needs 2 answers) or at the answers deadline. Needs `supabase/migrations/0004_members_swipes.sql`; the "member A can't read member B's budget" rule is written as row-level security there but **not yet run against a real database**. |
+| **M5** Candidate pool | Built and unit-tested (`src/lib/pool.ts`): meeting point, shared budget ceiling (never shown), dealbreakers, each person's travel limit, scoring on taste / fairness / vibe / quality / novelty, a deck of 10 with at most 3 of one cuisine, and a reserve. Runs on the built-in sample list of 37 real Bengaluru restaurants with estimated travel times. Google Places and Routes are not wired yet (need the key). |
+| **M6** Swipe | Everyone swipes the same deck of 10 (drag, buttons or arrow keys, with undo; each swipe is saved at once). **Not built: replacing a card after a left swipe** (it would give each person a different deck; see the note below). |
+| **M7** Shortlist, compare, winner | Built and tested: shortlist ranked by who said yes, a side-by-side compare table, one winner by the spec's rules (full matches, fairest first; otherwise a 60-second vote between the top two; a tie goes to the organiser). Deterministic and unit-tested. |
+| **M8** Winner actions | Book (Google Maps), website, call, directions and WhatsApp share are built as links per the spec's `BookingProvider` design. Opened and checked as links in a desktop browser; **not tried on a real Android or iOS phone**. Call only appears when a phone number is known. |
+| M9-M10 | Not started (solo mode, next-day rating, analytics, polish). |
+
+**What the sample data does and doesn't know.** Restaurant names and areas are real. Price, rating, opening hours, phone number, street address and photos are not known until Google Places is connected, so cards say "not confirmed yet" instead of showing a made-up number, and filters that need those facts (budget, open now, parking) let a place through and flag it. Photos are openly licensed pictures of the kind of food, not of the restaurant (credits at `/credits`).
 
 Product decisions on top of the spec are recorded at the top of SPEC.md (everyone swipes 10+; mocks until keys
 exist; area + pin, never a street address).
@@ -33,7 +40,7 @@ With `.env.local` empty, Binged runs in **mock mode**: a seed list of real Benga
 
 ## Turning on real sign-in (M1)
 
-1. Create a Supabase project. In the SQL editor run, in order, `supabase/migrations/0001_users.sql` (the users table, its Row Level Security and the trigger that copies your Google name, email and photo on first sign-in) `0002_preferences.sql` (preferences; the private budget column is readable only by its owner) and `0003_plans.sql` (plans; organisers can read and edit their own, nobody can read the table directly - invite links go through the server).
+1. Create a Supabase project. In the SQL editor run, in order, `supabase/migrations/0001_users.sql` (the users table, its Row Level Security and the trigger that copies your Google name, email and photo on first sign-in) `0002_preferences.sql` (preferences; the private budget column is readable only by its owner) `0003_plans.sql` (plans; organisers can read and edit their own, nobody can read the table directly - invite links go through the server) and `0004_members_swipes.sql` (members, their private answers, swipes and votes; no browser policy can read swipes or another member's budget).
 2. Google Cloud console: create an OAuth client (type Web). Authorised redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`. In Supabase, Authentication > Providers > Google: paste the client ID and secret. Authentication > URL configuration: add `http://localhost:3000/auth/callback` and your production URL `/auth/callback` to the redirect allow-list.
 3. Put `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and restart. The demo sign-in page switches off and the button opens Google.
 4. Optional now, needed for real map search and restaurants: `GOOGLE_MAPS_SERVER_KEY` (Places API (New)). Without it, area search uses the built-in locality list.
@@ -57,3 +64,12 @@ All tunable numbers (deck size, radius, weights, ₹ per price level, limits) ar
 - Invite links last until 12 hours after the plan starts. A bad link shows the "isn't available" page with HTTP 200 (not 404) so the response doesn't reveal whether a code ever existed.
 - The link-preview image uses the default font, so plan names in non-Latin scripts may not render in it. The page itself is unaffected.
 - Not yet tested against real services: Supabase policies for plans (`0003`), the service-role invite lookup, and how WhatsApp itself renders the preview (it needs a public URL).
+
+## Known gaps (M4-M8)
+
+- **Deck refinement is not built.** The spec has a left swipe replace the card with a more similar one. With everyone swiping the same 10 places that would make decks differ, so the reserve is stored but unused. A good place to use it is a second round when nobody agrees.
+- **No live push.** The lobby and waiting screens poll every 3-5 seconds. Supabase Realtime can replace that.
+- **Anyone who hasn't answered by the deadline is left out**, rather than using a saved profile (a friend's saved tastes aren't readable by the organiser's session in demo mode).
+- **Voting closes** when everyone has swiped, when the organiser taps "show the shortlist now", or 45 minutes after picking starts.
+- **Untested against real services:** the Supabase implementation of the group store and migration 0004, Google Places and Routes, and the winner links on real phones.
+- **Dev-only:** `next.config.ts` allows the loopback addresses 127.0.0.1-3 so one person can test as three people (each address has its own cookies).

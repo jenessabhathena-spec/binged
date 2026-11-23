@@ -2,10 +2,11 @@
 import { useActionState } from "react";
 import { demoSignIn, type DemoSignInState } from "@/app/actions/auth";
 
-export function DemoSignInForm() {
+export function DemoSignInForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState<DemoSignInState, FormData>(demoSignIn, {});
   return (
     <form action={action} className="mt-6 space-y-4">
+      <input type="hidden" name="next" value={next} />
       <label className="block">
         <span className="text-sm font-semibold">Name</span>
         <input name="name" autoComplete="name" required defaultValue={state.name} className="mt-1 w-full rounded-xl border border-line bg-surface px-3.5 py-3" />

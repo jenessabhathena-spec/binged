@@ -15,7 +15,7 @@ export type Profile = {
 export type ProfileInput = { name: string; home: Partial<AreaPin> | null; work: Partial<AreaPin> | null };
 export type ProfileErrors = Partial<Record<"name" | "home" | "work", string>>;
 
-function cleanPin(p: Partial<AreaPin> | null, label: string, required: boolean): { pin: AreaPin | null; error?: string } {
+export function cleanPin(p: Partial<AreaPin> | null, label: string, required: boolean): { pin: AreaPin | null; error?: string } {
   const empty = !p || (p.lat == null && p.lng == null && !p.name);
   if (empty) return required ? { pin: null, error: `Choose your ${label} on the map or search for it` } : { pin: null };
   const name = String(p!.name ?? "").trim().replace(/\s+/g, " ");

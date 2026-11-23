@@ -1,8 +1,9 @@
 // GET /api/areas?q=indira          -> suggestions
 // GET /api/areas?id=<place or area> -> { name, lat, lng } (rounded, Bengaluru only)
-// Signed-in callers only (friends joining get access in M4), with a per-IP limit: Google calls cost money.
+// Signed-in people and friends who joined a plan as a guest only, with a per-IP limit: Google calls cost money.
 import { NextResponse, type NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { hasGuestPass } from "@/lib/group";
 import { areaDetails, searchAreas } from "@/lib/places/autocomplete";
 
 const hits = new Map<string, number[]>();
@@ -16,7 +17,7 @@ function limited(ip: string, max = 60, windowMs = 60_000) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!(await getCurrentUser())) return NextResponse.json({ error: "Sign in first" }, { status: 401 });
+  if (!(await getCurrentUser()) && !(await hasGuestPass())) return NextResponse.json({ error: "Sign in first" }, { status: 401 });
   const ip = request.headers.get("x-forwarded-for")?.split(",").pop()?.trim() || "local";
   if (limited(ip)) return NextResponse.json({ error: "Too many searches. Wait a moment." }, { status: 429 });
 

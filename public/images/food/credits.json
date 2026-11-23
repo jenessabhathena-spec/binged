@@ -1,0 +1,72 @@
+{
+  "south-indian": {
+    "title": "Masala dosa 01.jpg",
+    "author": "Marajozkee",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Masala_dosa_01.jpg"
+  },
+  "biryani": {
+    "title": "Chicken biryani 02-06-2015 (India).jpg",
+    "author": "Shivani shipra",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Chicken_biryani_02-06-2015_(India).jpg"
+  },
+  "italian": {
+    "title": "Spaghetti aglio e olio KB.jpg",
+    "author": "Bairuilong",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Spaghetti_aglio_e_olio_KB.jpg"
+  },
+  "asian": {
+    "title": "Three dim sum in steamer basket.jpg",
+    "author": "Mshuang2",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Three_dim_sum_in_steamer_basket.jpg"
+  },
+  "cafe": {
+    "title": "Classical Cappuccino in Savour Cafe.jpg",
+    "author": "Peachyeung316",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Classical_Cappuccino_in_Savour_Cafe.jpg"
+  },
+  "desserts": {
+    "title": "Piece of chocolate cake on a white plate decorated with chocolate sauce.jpg",
+    "author": "Daria YakovlevaMinor edits made by Subsidiary account",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "source": "https://commons.wikimedia.org/wiki/File:Piece_of_chocolate_cake_on_a_white_plate_decorated_with_chocolate_sauce.jpg"
+  },
+  "north-indian": {
+    "title": "Chicken makhani.jpg",
+    "author": "stu_spivack",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Chicken_makhani.jpg"
+  },
+  "street-food": {
+    "title": "Papri chaat.jpg",
+    "author": "Charles Haynes",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Papri_chaat.jpg"
+  },
+  "continental": {
+    "title": "Burger and fries on a wooden plate.jpg",
+    "author": "Pattaya Patrol",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Burger_and_fries_on_a_wooden_plate.jpg"
+  },
+  "pub": {
+    "title": "Glass of beer at The Tombs.jpg",
+    "author": "Ser Amantio di Nicolao",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Glass_of_beer_at_The_Tombs.jpg"
+  }
+}

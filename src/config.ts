@@ -14,11 +14,25 @@ export const config = {
 
   search: {
     radiusMetres: 4000, // SPEC open question 2: 3 km or 6 km; start in the middle
+    radiusStepsKm: [4, 6, 10], // widen the search in these steps until a full deck of places fits everyone
     maxResults: 60,
   },
 
   travel: {
     defaultMaxMinutes: 40, // per-person dealbreaker default
+    // Demo-mode travel estimate (no Routes API yet): straight-line km x detour / speed + a fixed pickup time.
+    // Real travel times from Google's Routes API replace this once the key is added.
+    detourFactor: 1.35,
+    speedKmh: 20, // Bengaluru evening traffic
+    fixedMinutes: 4,
+  },
+
+  members: { firstNameMax: 30 },
+
+  voting: {
+    windowMinutes: 45, // everyone should have swiped within this long of picking starting; then it closes
+    shortlistMax: 5,
+    shortlistMin: 3,
   },
 
   plan: {
