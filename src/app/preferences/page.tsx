@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { StepShell, Planned } from "@/components/StepShell";
+import { StepShell } from "@/components/StepShell";
 import { Loading } from "@/components/Loading";
-import { requireProfile } from "@/lib/auth";
+import { getPreferences, requireProfile } from "@/lib/auth";
+import { PreferencesForm } from "./PreferencesForm";
 
 export const metadata: Metadata = { title: "Your tastes" };
 
@@ -15,18 +16,12 @@ export default function Preferences() {
 }
 
 async function PreferencesStep() {
-  await requireProfile(); // needs a signed-in person with a home area
+  const user = await requireProfile(); // needs a signed-in person with a home area
+  const prefs = await getPreferences(user);
   return (
-    <StepShell step="preferences" subtitle="Two minutes. Skip anything." back="/profile" next={{ href: "/home", label: "Save and continue" }}>
-      <Planned
-        items={[
-          "Cuisines you like: North Indian, South Indian, Chinese, Asian, Italian, Continental, Cafe, Biryani, Desserts…",
-          "Diet: Veg, Non-veg, Jain, Vegan or Eggetarian. Spice: Mild, Medium or Hot.",
-          "Usual budget per person (₹ slider). Private: only you can see this.",
-          "Vibe: Quiet, Lively, Rooftop, Cafe, Pub, Family.",
-          "Dealbreakers: veg options, no alcohol, parking, wheelchair access, max travel time (40 min).",
-        ]}
-      />
+    <StepShell step="preferences" subtitle="Two minutes. Every question is optional, and you can change these any time." back="/profile" preview={false}>
+      {/* key: remount the form when the saved data changes, so its checkboxes show the new values */}
+      <PreferencesForm key={JSON.stringify(prefs)} prefs={prefs} />
     </StepShell>
   );
 }

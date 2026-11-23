@@ -4,11 +4,13 @@ import "server-only";
 // but it only ever holds what that same person typed. Replaced entirely by Supabase Auth once configured.
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { Profile } from "@/lib/profile";
+import type { Preferences } from "@/lib/preferences";
 
 export const MOCK_COOKIE = "binged_demo";
 const MAX_AGE_S = 30 * 24 * 3600;
 
-export type MockSession = { v: 1; id: string; issuedAt: number; profile: Profile };
+// preferences is optional so cookies issued before M2 still work.
+export type MockSession = { v: 1; id: string; issuedAt: number; profile: Profile; preferences?: Preferences };
 
 function secret() {
   const s = process.env.MOCK_SESSION_SECRET;

@@ -21,7 +21,8 @@ async function ProfileStep() {
   const user = await requireUser();
   return (
     <StepShell step="profile" subtitle="So we can work out fair travel times." back="/" preview={false}>
-      <ProfileForm profile={user.profile} />
+      <ProfileForm key={JSON.stringify(user.profile)} profile={user.profile} />
+      <p className="text-center text-sm"><Link href="/preferences" className="font-medium text-brand underline">Edit your tastes and budget</Link></p>
       <form action={signOut} className="pt-2 text-center">
         <button className="text-sm text-muted underline">Not you? Sign out</button>
       </form>

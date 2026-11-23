@@ -8,6 +8,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { decodeSession, encodeSession, MOCK_COOKIE, cookieOptions, type MockSession } from "@/lib/mock-session";
 import type { AreaPin, Profile } from "@/lib/profile";
+import { EMPTY_PREFERENCES, normalisePreferences, type Preferences } from "@/lib/preferences";
 
 export type CurrentUser = { id: string; mode: "supabase" | "demo"; profile: Profile };
 
@@ -76,4 +77,43 @@ export async function saveProfile(u: CurrentUser, v: { name: string; home: AreaP
   if (!s) throw new Error("Signed out");
   const next: MockSession = { ...s, profile: { ...s.profile, name: v.name, home: v.home, work: v.work } };
   store.set(MOCK_COOKIE, encodeSession(next), cookieOptions);
+}
+
+// ---- Preferences (SPEC S3). The budget inside is private: it is only ever returned to its owner. ----
+
+type PrefRow = {
+  cuisines: string[] | null; diet: string | null; spice: string | null; budget_per_person: number | null;
+  vibes: string[] | null; dealbreakers: string[] | null; max_travel_min: number | null;
+};
+
+export async function getPreferences(u: CurrentUser): Promise<Preferences> {
+  if (u.mode === "supabase") {
+    const supabase = await createClient();
+    if (!supabase) return EMPTY_PREFERENCES;
+    const { data } = await supabase.from("preferences").select("*").eq("user_id", u.id).maybeSingle<PrefRow>();
+    if (!data) return EMPTY_PREFERENCES;
+    return normalisePreferences({
+      cuisines: data.cuisines, diet: data.diet, spice: data.spice, budgetPerPerson: data.budget_per_person,
+      vibes: data.vibes, dealbreakers: data.dealbreakers, maxTravelMin: data.max_travel_min,
+    });
+  }
+  const s = decodeSession((await cookies()).get(MOCK_COOKIE)?.value);
+  return normalisePreferences(s?.preferences);
+}
+
+export async function savePreferences(u: CurrentUser, p: Preferences) {
+  if (u.mode === "supabase") {
+    const supabase = await createClient();
+    if (!supabase) throw new Error("Supabase is not configured");
+    const { error } = await supabase.from("preferences").upsert({
+      user_id: u.id, cuisines: p.cuisines, diet: p.diet, spice: p.spice, budget_per_person: p.budgetPerPerson,
+      vibes: p.vibes, dealbreakers: p.dealbreakers, max_travel_min: p.maxTravelMin,
+    }); // Row Level Security limits this to the caller's own row
+    if (error) throw new Error("Couldn't save your preferences");
+    return;
+  }
+  const store = await cookies();
+  const s = decodeSession(store.get(MOCK_COOKIE)?.value);
+  if (!s) throw new Error("Signed out");
+  store.set(MOCK_COOKIE, encodeSession({ ...s, preferences: p }), cookieOptions);
 }

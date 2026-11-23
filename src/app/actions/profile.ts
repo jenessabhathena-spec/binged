@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser, saveProfile } from "@/lib/auth";
 import { profileInputFromForm, validateProfile, type ProfileErrors } from "@/lib/profile";
@@ -17,5 +18,8 @@ export async function saveProfileAction(_prev: ProfileState, fd: FormData): Prom
   } catch {
     return { formError: "Couldn't save your profile. Please try again." };
   }
+  revalidatePath("/profile");
+  revalidatePath("/home");
+  revalidatePath("/preferences");
   redirect("/preferences");
 }
