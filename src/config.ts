@@ -23,8 +23,18 @@ export const config = {
 
   plan: {
     defaultName: "Friday dinner",
-    defaultDeadlineHours: 2,
+    defaultTime: "20:00",
+    defaultPartySize: 4,
+    minPartySize: 2,
     maxPartySize: 8, // groups of 8+ are out of scope for v1
+    deadlineHoursOptions: [1, 2, 6, 12, 24],
+    defaultDeadlineHours: 2,
+    minLeadMinutes: 30, // a plan must start at least this far ahead
+    maxAdvanceDays: 60,
+    deadlineBufferMinutes: 15, // answers must close at least this long before the plan starts
+    inviteValidAfterStartHours: 12, // an invite link stops working this long after the plan starts
+    maxPerOrganiserPerDay: 20,
+    nameMaxLength: 50,
     tieBreakSeconds: 60,
   },
 

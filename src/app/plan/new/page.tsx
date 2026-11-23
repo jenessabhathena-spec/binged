@@ -1,17 +1,34 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import { StepShell, Planned } from "@/components/StepShell";
+import { StepShell } from "@/components/StepShell";
+import { Loading } from "@/components/Loading";
+import { config } from "@/config";
+import { requireProfile } from "@/lib/auth";
+import { requestTime } from "@/lib/now";
+import { nextFridayIST, todayIST } from "@/lib/plans";
+import { PlanForm } from "./PlanForm";
 
 export const metadata: Metadata = { title: "Create a plan" };
 
 export default function NewPlan() {
   return (
-    <StepShell step="new-plan" back="/home" next={{ href: "/plan/demo/share", label: "Create plan" }}>
-      <Planned
-        items={[
-          "Plan name (default \"Friday dinner\"), date and time.",
-          "Where: \"Anywhere fair\" finds the point that suits everyone's start areas, or pick a locality.",
-          "Expected party size (up to 8) and response deadline (default 2 hours).",
-        ]}
+    <Suspense fallback={<Loading />}>
+      <NewPlanStep />
+    </Suspense>
+  );
+}
+
+async function NewPlanStep() {
+  await requireProfile(); // also waits for a real request, so "now" below is safe to read
+  const now = requestTime();
+  const p = config.plan;
+  return (
+    <StepShell step="new-plan" subtitle="Friends join from a link you share on WhatsApp." back="/home" preview={false}>
+      <PlanForm
+        defaults={{
+          name: p.defaultName, date: nextFridayIST(now), time: p.defaultTime, minDate: todayIST(now),
+          partySize: String(p.defaultPartySize), deadlineHours: String(p.defaultDeadlineHours),
+        }}
       />
     </StepShell>
   );
