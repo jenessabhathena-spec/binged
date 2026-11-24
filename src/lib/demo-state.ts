@@ -3,6 +3,7 @@ import "server-only";
 // be opened in a different browser (a cookie cannot do that). Development only: it refuses to run in production.
 // Every change goes through mutate(): read, change, write back atomically (temp file + rename).
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Member } from "@/lib/members";
 import type { Plan } from "@/lib/plans";
@@ -12,10 +13,15 @@ export type StoredTieVote = { planId: string; memberId: string; placeId: string 
 export type DemoState = { plans: Plan[]; members: Member[]; swipes: StoredSwipe[]; tieVotes: StoredTieVote[] };
 
 function dir() {
-  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_STORE !== "1") {
+  // Vercel's disk is read-only except /tmp, which belongs to one server instance and is wiped when it is recycled.
+  // So on Vercel the demo database is best-effort: it works while friends are using it, and may vanish later.
+  const onVercel = Boolean(process.env.VERCEL);
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_STORE !== "1" && !onVercel) {
     throw new Error("Plans need Supabase in production. The local demo store is for development only.");
   }
-  return process.env.DEMO_DATA_DIR || join(process.cwd(), ".data");
+  if (process.env.DEMO_DATA_DIR) return process.env.DEMO_DATA_DIR;
+  if (onVercel) return join(tmpdir(), "binged-demo");
+  return join(process.cwd(), ".data");
 }
 
 export function readState(): DemoState {

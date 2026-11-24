@@ -33,3 +33,28 @@ describe("demo session cookie", () => {
     expect(newMockSession("A", "a@x.co").id).not.toBe(newMockSession("A", "a@x.co").id);
   });
 });
+
+describe("signing key on Vercel with nothing configured", () => {
+  it("is derived from the deployment, so every server instance of one deployment agrees", async () => {
+    const { vi } = await import("vitest");
+    vi.stubEnv("MOCK_SESSION_SECRET", "");
+    vi.stubEnv("VERCEL", "1");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_DEPLOYMENT_ID", "dpl_AAAA");
+    const s = newMockSession("Asha", "asha@gmail.com", 1_000);
+    const cookie = encodeSession(s);
+    expect(decodeSession(cookie, 2_000)).toEqual(s); // same deployment, same key
+    vi.stubEnv("VERCEL_DEPLOYMENT_ID", "dpl_BBBB");
+    expect(decodeSession(cookie, 2_000)).toBeNull(); // a new deployment ends old sessions
+    vi.unstubAllEnvs();
+  });
+
+  it("still refuses to guess a key in production outside Vercel", async () => {
+    const { vi } = await import("vitest");
+    vi.stubEnv("MOCK_SESSION_SECRET", "");
+    vi.stubEnv("VERCEL", "");
+    vi.stubEnv("NODE_ENV", "production");
+    expect(() => encodeSession(newMockSession("Asha", "asha@gmail.com", 1_000))).toThrow(/MOCK_SESSION_SECRET/);
+    vi.unstubAllEnvs();
+  });
+});

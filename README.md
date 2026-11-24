@@ -40,8 +40,10 @@ With `.env.local` empty, Binged runs in **mock mode**: a seed list of real Benga
 
 ## Turning on real sign-in (M1)
 
+**The short version is in [SETUP.md](SETUP.md)** (accounts, clicks and the three values for Vercel, in order). `supabase/setup.sql` is all four migrations in one paste. The detail below is for reference.
+
 1. Create a Supabase project. In the SQL editor run, in order, `supabase/migrations/0001_users.sql` (the users table, its Row Level Security and the trigger that copies your Google name, email and photo on first sign-in) `0002_preferences.sql` (preferences; the private budget column is readable only by its owner) `0003_plans.sql` (plans; organisers can read and edit their own, nobody can read the table directly - invite links go through the server) and `0004_members_swipes.sql` (members, their private answers, swipes and votes; no browser policy can read swipes or another member's budget).
-2. Google Cloud console: create an OAuth client (type Web). Authorised redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`. In Supabase, Authentication > Providers > Google: paste the client ID and secret. Authentication > URL configuration: add `http://localhost:3000/auth/callback` and your production URL `/auth/callback` to the redirect allow-list.
+2. Google Cloud console: create an OAuth client (type Web). Authorised redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`. In Supabase, Authentication > Providers > Google: paste the client ID and secret. Authentication > URL configuration: add `http://localhost:3000/**` and your production URL followed by `/**` to the redirect allow-list (the wildcard matters: the sign-in return address carries a `?next=` part).
 3. Put `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` and restart. The demo sign-in page switches off and the button opens Google.
 4. Optional now, needed for real map search and restaurants: `GOOGLE_MAPS_SERVER_KEY` (Places API (New)). Without it, area search uses the built-in locality list.
 
@@ -73,3 +75,7 @@ All tunable numbers (deck size, radius, weights, ₹ per price level, limits) ar
 - **Voting closes** when everyone has swiped, when the organiser taps "show the shortlist now", or 45 minutes after picking starts.
 - **Untested against real services:** the Supabase implementation of the group store and migration 0004, Google Places and Routes, and the winner links on real phones.
 - **Dev-only:** `next.config.ts` allows the loopback addresses 127.0.0.1-3 so one person can test as three people (each address has its own cookies).
+
+## Demo mode on Vercel
+
+With no Supabase project, a Vercel deployment runs on a temporary demo database with no settings to add: data lives in the server's `/tmp`, and the session cookie is signed with a key derived from the deployment, so everyone signs in again after each deploy. Pages show a "Demo database" notice. `/tmp` belongs to one server instance and is wiped when it is recycled, so plans can vanish and requests that land on another instance won't see them. It is for trying Binged with a few friends; [SETUP.md](SETUP.md) replaces it with Supabase.

@@ -12,5 +12,9 @@ export const env = {
 
 export const isSupabaseConfigured = () => Boolean(env.supabaseUrl && env.supabaseAnonKey);
 
+// True on Vercel (it sets VERCEL) while there is still no Supabase project. The app then runs on a temporary
+// demo database kept in the server's /tmp: fine for trying it with a few friends, not for anything that matters.
+export const isHostedDemo = () => Boolean(process.env.VERCEL) && !isSupabaseConfigured();
+
 // Server only. Never call from a client component: the key must not reach the browser.
 export const isGooglePlacesConfigured = () => Boolean(process.env.GOOGLE_MAPS_SERVER_KEY);

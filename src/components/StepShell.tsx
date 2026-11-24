@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { isHostedDemo } from "@/lib/env";
 import { STEPS, position, FRIEND_FLOW, ORGANISER_FLOW, type StepKey } from "@/lib/steps";
 
 type Props = {
@@ -48,6 +49,11 @@ export function StepShell({ step, flow = "organiser", title, subtitle, back, nex
         <h1 className="text-2xl font-bold leading-tight">{title ?? s.title}</h1>
         {subtitle && <p className="mt-1.5 text-muted">{subtitle}</p>}
         <div className="mt-5 space-y-3">{children}</div>
+        {isHostedDemo() && (
+          <p className="mt-6 rounded-xl bg-brand-soft px-3 py-2 text-xs" data-testid="demo-notice">
+            Demo database: plans are kept in temporary server storage and can disappear without warning. Fine for trying Binged with friends, not for a dinner you can&apos;t afford to lose.
+          </p>
+        )}
         {preview && (
           <p className="mt-6 rounded-xl border border-dashed border-line px-3 py-2 text-xs text-muted">
             Preview: this page is a placeholder for navigation. It is built in milestone {s.milestone}.
