@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Local demo data (plans for the no-Supabase demo)
 .data/
+
+.vercel
+.env*

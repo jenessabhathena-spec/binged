@@ -25,7 +25,7 @@ const newInviteCode = () => randomBytes(8).toString("base64url"); // 11 URL-safe
 
 const fileStore: PlanStore = {
   async create(o, v, now) {
-    return mutate((st) => {
+    return await mutate((st) => {
       let inviteCode = newInviteCode();
       while (st.plans.some((p) => p.inviteCode === inviteCode)) inviteCode = newInviteCode();
       const plan: Plan = {
@@ -38,17 +38,17 @@ const fileStore: PlanStore = {
     });
   },
   async listActive(organiserId, now) {
-    return readState().plans.filter((p) => p.organiserId === organiserId && isActive(p, now)).sort((a, b) => a.startsAt - b.startsAt);
+    return (await readState()).plans.filter((p) => p.organiserId === organiserId && isActive(p, now)).sort((a, b) => a.startsAt - b.startsAt);
   },
   async getOwned(planId, organiserId) {
-    return readState().plans.find((p) => p.id === planId && p.organiserId === organiserId) ?? null;
+    return (await readState()).plans.find((p) => p.id === planId && p.organiserId === organiserId) ?? null;
   },
   async getByInvite(code, now) {
-    const p = readState().plans.find((x) => x.inviteCode === code);
+    const p = (await readState()).plans.find((x) => x.inviteCode === code);
     return p && !inviteExpired(p, now) && p.status !== "closed" ? p : null;
   },
   async countSince(organiserId, since) {
-    return readState().plans.filter((p) => p.organiserId === organiserId && p.createdAt >= since).length;
+    return (await readState()).plans.filter((p) => p.organiserId === organiserId && p.createdAt >= since).length;
   },
 };
 

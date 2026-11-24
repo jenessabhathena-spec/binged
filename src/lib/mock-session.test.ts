@@ -35,17 +35,17 @@ describe("demo session cookie", () => {
 });
 
 describe("signing key on Vercel with nothing configured", () => {
-  it("is derived from the deployment, so every server instance of one deployment agrees", async () => {
+  it("is derived from the project, so every instance and every deploy of it agrees", async () => {
     const { vi } = await import("vitest");
     vi.stubEnv("MOCK_SESSION_SECRET", "");
     vi.stubEnv("VERCEL", "1");
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("VERCEL_DEPLOYMENT_ID", "dpl_AAAA");
+    vi.stubEnv("VERCEL_PROJECT_ID", "prj_AAAA");
     const s = newMockSession("Asha", "asha@gmail.com", 1_000);
     const cookie = encodeSession(s);
-    expect(decodeSession(cookie, 2_000)).toEqual(s); // same deployment, same key
-    vi.stubEnv("VERCEL_DEPLOYMENT_ID", "dpl_BBBB");
-    expect(decodeSession(cookie, 2_000)).toBeNull(); // a new deployment ends old sessions
+    expect(decodeSession(cookie, 2_000)).toEqual(s); // same project, same key
+    vi.stubEnv("VERCEL_PROJECT_ID", "prj_BBBB");
+    expect(decodeSession(cookie, 2_000)).toBeNull(); // a different project has a different key
     vi.unstubAllEnvs();
   });
 

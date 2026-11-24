@@ -39,40 +39,40 @@ const newToken = () => randomBytes(24).toString("base64url");
 // ---------- local file (demo) ----------
 
 const fileGroup: GroupStore = {
-  async getPlan(planId) { return readState().plans.find((p) => p.id === planId) ?? null; },
+  async getPlan(planId) { return (await readState()).plans.find((p) => p.id === planId) ?? null; },
   async patchPlan(planId, patch, ifStatus) {
-    return mutate((s) => {
+    return await mutate((s) => {
       const p = s.plans.find((x) => x.id === planId);
       if (!p || (ifStatus && p.status !== ifStatus)) return null;
       Object.assign(p, patch);
       return { ...p };
     });
   },
-  async listMembers(planId) { return readState().members.filter((m) => m.planId === planId).sort((a, b) => a.joinedAt - b.joinedAt); },
-  async getMember(planId, memberId) { return readState().members.find((m) => m.planId === planId && m.id === memberId) ?? null; },
-  async findByUser(planId, userId) { return readState().members.find((m) => m.planId === planId && m.userId === userId) ?? null; },
+  async listMembers(planId) { return (await readState()).members.filter((m) => m.planId === planId).sort((a, b) => a.joinedAt - b.joinedAt); },
+  async getMember(planId, memberId) { return (await readState()).members.find((m) => m.planId === planId && m.id === memberId) ?? null; },
+  async findByUser(planId, userId) { return (await readState()).members.find((m) => m.planId === planId && m.userId === userId) ?? null; },
   async addMember(m, now) {
-    return mutate((s) => {
+    return await mutate((s) => {
       const member: Member = { id: randomUUID(), planId: m.planId, userId: m.userId, firstName: m.firstName, role: m.role, joinedAt: now, answeredAt: m.answers ? now : null, answers: m.answers, token: newToken() };
       s.members.push(member);
       return member;
     });
   },
   async saveAnswers(planId, memberId, answers, now) {
-    mutate((s) => {
+    await mutate((s) => {
       const m = s.members.find((x) => x.planId === planId && x.id === memberId);
       if (m) { m.answers = answers; m.answeredAt = now; }
     });
   },
-  async listSwipes(planId) { return readState().swipes.filter((x) => x.planId === planId); },
+  async listSwipes(planId) { return (await readState()).swipes.filter((x) => x.planId === planId); },
   async saveSwipe(sw) {
-    mutate((s) => {
+    await mutate((s) => {
       s.swipes = s.swipes.filter((x) => !(x.planId === sw.planId && x.memberId === sw.memberId && x.placeId === sw.placeId));
       s.swipes.push(sw);
     });
   },
   async undoLastSwipe(planId, memberId) {
-    return mutate((s) => {
+    return await mutate((s) => {
       const mine = s.swipes.filter((x) => x.planId === planId && x.memberId === memberId);
       const last = mine.sort((a, b) => b.at - a.at)[0];
       if (!last) return null;
@@ -81,10 +81,10 @@ const fileGroup: GroupStore = {
     });
   },
   async listTieVotes(planId) {
-    return Object.fromEntries(readState().tieVotes.filter((v) => v.planId === planId).map((v) => [v.memberId, v.placeId]));
+    return Object.fromEntries((await readState()).tieVotes.filter((v) => v.planId === planId).map((v) => [v.memberId, v.placeId]));
   },
   async saveTieVote(planId, memberId, placeId) {
-    mutate((s) => {
+    await mutate((s) => {
       s.tieVotes = s.tieVotes.filter((v) => !(v.planId === planId && v.memberId === memberId));
       s.tieVotes.push({ planId, memberId, placeId });
     });

@@ -12,8 +12,16 @@ export const env = {
 
 export const isSupabaseConfigured = () => Boolean(env.supabaseUrl && env.supabaseAnonKey);
 
-// True on Vercel (it sets VERCEL) while there is still no Supabase project. The app then runs on a temporary
-// demo database kept in the server's /tmp: fine for trying it with a few friends, not for anything that matters.
+// The Redis REST address and token, if set (Vercel's Upstash integration sets KV_REST_API_URL / KV_REST_API_TOKEN).
+export const redisRest = (): { url: string; token: string } | null => {
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  return url && token ? { url: url.replace(/\/$/, ""), token } : null;
+};
+
+// True on Vercel (it sets VERCEL) while there is still no Supabase project. The app then runs on a demo database:
+// Redis if one is connected, otherwise temporary server storage. Fine for trying it with friends, not for anything
+// that matters.
 export const isHostedDemo = () => Boolean(process.env.VERCEL) && !isSupabaseConfigured();
 
 // Server only. Never call from a client component: the key must not reach the browser.

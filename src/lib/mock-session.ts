@@ -15,10 +15,10 @@ export type MockSession = { v: 1; id: string; issuedAt: number; profile: Profile
 function secret() {
   const s = process.env.MOCK_SESSION_SECRET;
   if (s && s.length >= 32) return s;
-  // Vercel demo with no secret configured: derive one from the deployment id, which every server instance of this
-  // deployment shares. Signing still stops people editing their cookie; sessions simply end at each new deploy.
+  // Vercel demo with no secret configured: derive one from the project id, which every server instance and every
+  // deployment shares, so people stay signed in across deploys. Signing still stops people editing their cookie.
   // Forging a cookie gains nothing here: access to a plan needs an unguessable id or token, never just a signature.
-  const hosted = process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_PROJECT_ID || process.env.VERCEL_URL;
+  const hosted = process.env.VERCEL_PROJECT_ID || process.env.VERCEL_DEPLOYMENT_ID || process.env.VERCEL_URL;
   if (process.env.VERCEL && hosted) return createHash("sha256").update(`binged-demo-session:${hosted}`).digest("hex");
   if (process.env.NODE_ENV === "production") throw new Error("MOCK_SESSION_SECRET (32+ characters) is required to run demo mode in production");
   return "binged-dev-only-secret-not-for-production-use";

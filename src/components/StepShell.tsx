@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { isHostedDemo } from "@/lib/env";
+import { isHostedDemo, redisRest } from "@/lib/env";
 import { STEPS, position, FRIEND_FLOW, ORGANISER_FLOW, type StepKey } from "@/lib/steps";
 
 type Props = {
@@ -51,7 +51,9 @@ export function StepShell({ step, flow = "organiser", title, subtitle, back, nex
         <div className="mt-5 space-y-3">{children}</div>
         {isHostedDemo() && (
           <p className="mt-6 rounded-xl bg-brand-soft px-3 py-2 text-xs" data-testid="demo-notice">
-            Demo database: plans are kept in temporary server storage and can disappear without warning. Fine for trying Binged with friends, not for a dinner you can&apos;t afford to lose.
+            {redisRest()
+              ? "Demo database: shared between everyone's devices and cleared after a week. Fine for trying Binged with friends, not for anything you need to keep."
+              : "Demo database: plans are kept in temporary server storage and can disappear without warning. Fine for trying Binged with friends, not for a dinner you can't afford to lose."}
           </p>
         )}
         {preview && (
