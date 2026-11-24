@@ -6,7 +6,7 @@ import { CompareTable } from "@/components/CompareTable";
 import { ShortlistRow } from "@/components/ShortlistRow";
 import { WinnerPanel } from "@/components/WinnerPanel";
 import { toCard } from "@/lib/cards";
-import { buildDemoPool, DEMO_PEOPLE, DEMO_YOU, friendSwipes, friendTieVotes } from "@/lib/demo";
+import { buildDemoPool, DEMO_PEOPLE, DEMO_YOU, demoGroup, friendSwipes, friendTieVotes, MIN_PERSONAL_DECK, type DemoYou } from "@/lib/demo";
 import { decide, rank, type Ranked, type Swipe, type TieBreak } from "@/lib/matching";
 import { istToEpoch, nextFridayIST } from "@/lib/plans";
 
@@ -15,15 +15,20 @@ const STEPS: { key: Phase; label: string }[] = [
   { key: "intro", label: "Meet the group" }, { key: "swipe", label: "Swipe" }, { key: "shortlist", label: "Shortlist" },
   { key: "compare", label: "Compare" }, { key: "winner", label: "Winner" },
 ];
-const PEOPLE = DEMO_PEOPLE.map((p) => ({ id: p.id, firstName: p.firstName }));
 
 const primary = "block w-full rounded-2xl bg-brand py-3.5 text-center font-semibold text-brand-ink";
 const secondary = "block w-full rounded-2xl border border-line bg-surface py-3 text-center font-medium";
 
 // A guided tour of Binged for one person: you are Asha, Ravi and Meera are pretend friends who swipe on their own.
 // It runs entirely in the browser, with no sign-in and nothing saved.
-export function DemoApp() {
-  const pool = useMemo(() => buildDemoPool(), []);
+export function DemoApp({ you }: { you?: DemoYou }) {
+  // Someone with a saved profile gets a demo built from their own name, area and tastes, if enough places fit.
+  const personal = useMemo(() => (you ? buildDemoPool(demoGroup(you)) : null), [you]);
+  const usePersonal = Boolean(you && personal && personal.deck.length >= MIN_PERSONAL_DECK);
+  const group = useMemo(() => (usePersonal ? demoGroup(you) : DEMO_PEOPLE), [usePersonal, you]);
+  const pool = useMemo(() => (usePersonal && personal ? personal : buildDemoPool()), [usePersonal, personal]);
+  const PEOPLE = useMemo(() => group.map((p) => ({ id: p.id, firstName: p.firstName })), [group]);
+  const youName = group[0].firstName;
   const deck = pool.deck;
   const [phase, setPhase] = useState<Phase>("intro");
   const [mine, setMine] = useState<Swipe[]>([]); // your swipes, in order
@@ -68,7 +73,8 @@ export function DemoApp() {
         {phase === "intro" && (
           <>
             <h1 className="text-2xl font-bold leading-tight">Friday dinner for three</h1>
-            <p className="text-muted">A quick tour. You are Asha. Ravi and Meera are pretend friends who swipe on their own, so you can see the whole thing alone.</p>
+            <p className="text-muted">A quick tour. You are {youName}{usePersonal && you ? ", starting from " + you.areaName : ""}. Ravi and Meera are pretend friends who swipe on their own, so you can see the whole thing alone.</p>
+            {you && !usePersonal && <p role="status" className="rounded-xl border border-dashed border-line px-3 py-2 text-sm text-muted">Few of the sample restaurants are close to {you.areaName}, so this tour uses a sample group instead.</p>}
             <ul className="space-y-2" data-testid="demo-people">
               {PEOPLE.map((p) => (
                 <li key={p.id} className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">

@@ -49,3 +49,34 @@ describe("the demo group", () => {
     }
   });
 });
+
+import { demoGroup, MIN_PERSONAL_DECK, type DemoYou } from "@/lib/demo";
+import { EMPTY_PREFERENCES } from "@/lib/preferences";
+
+const priya: DemoYou = { firstName: "Priya", areaName: "Jayanagar", start: { lat: 12.925, lng: 77.5938 }, prefs: { ...EMPTY_PREFERENCES, cuisines: ["Biryani"], budgetPerPerson: 600, vibes: ["Family"], dealbreakers: ["must_have_veg"], maxTravelMin: 30 } };
+
+describe("the demo built from your own profile", () => {
+  it("puts you first with your own name, start and tastes, and keeps the same two friends", () => {
+    const g = demoGroup(priya);
+    expect(g.map((p) => p.firstName)).toEqual(["Priya", "Ravi", "Meera"]);
+    expect(g[0]).toMatchObject({ id: DEMO_YOU, start: priya.start, budget: 600, cuisines: ["Biryani"], dealbreakers: ["must_have_veg"], maxTravelMin: 30 });
+  });
+
+  it("without a profile it is the sample group", () => {
+    expect(demoGroup(undefined)).toBe(DEMO_PEOPLE);
+  });
+
+  it("builds a real deck from the personal group, and your swipes use your id so matching still works", () => {
+    const g = demoGroup(priya);
+    const p = buildDemoPool(g);
+    expect(p.deck.length).toBeGreaterThanOrEqual(MIN_PERSONAL_DECK);
+    for (const e of p.deck) expect(Object.keys(e.travel).sort()).toEqual(["meera", "ravi", DEMO_YOU].sort());
+    const all = p.deck.map((e) => ({ memberId: DEMO_YOU, placeId: e.place.id, liked: true }));
+    expect(["winner", "tiebreak"]).toContain(decide(rank(p.deck, [...all, ...friendSwipes(p.deck)])).kind);
+  });
+
+  it("someone starting far outside the sample area gets too few places, which triggers the fallback", () => {
+    const far: DemoYou = { ...priya, areaName: "Yelahanka", start: { lat: 13.1007, lng: 77.5963 }, prefs: { ...priya.prefs, maxTravelMin: 15 } };
+    expect(buildDemoPool(demoGroup(far)).deck.length).toBeLessThan(MIN_PERSONAL_DECK);
+  });
+});

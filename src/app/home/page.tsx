@@ -34,6 +34,11 @@ async function HomeStep() {
       next={{ href: "/plan/new", label: "Plan with friends" }}
       secondary={{ href: "/solo", label: "Find something for me" }}
     >
+      <Link href="/demo" className="block rounded-2xl bg-brand-soft p-4" data-testid="home-demo">
+        <p className="font-semibold">See how it works: try the demo</p>
+        <p className="mt-0.5 text-sm text-muted">A two-minute tour with two pretend friends, built from your own area and tastes. No one to invite.</p>
+        <span className="mt-2 inline-block rounded-full bg-brand px-3.5 py-1.5 text-sm font-semibold text-brand-ink">Start the demo</span>
+      </Link>
       <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-3.5">
         <div className="min-w-0 flex-1">
           <p className="text-xs text-muted">Your tastes</p>
