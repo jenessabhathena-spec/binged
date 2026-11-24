@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { organiserChooseAction, tieVoteAction } from "@/app/actions/group";
+import { useLiveRefresh } from "@/components/AutoRefresh";
 
 type Option = { id: string; name: string; area: string; yes: string[] };
 
@@ -14,15 +15,11 @@ export function TieBreak({ planId, options, endsAt, voted, voters, myVote, close
   const [pending, start] = useTransition();
   const [left, setLeft] = useState(() => Math.max(0, Math.ceil((endsAt - Date.now()) / 1000)));
 
+  useLiveRefresh(2000); // pick up other people's votes, and the close
   useEffect(() => {
-    const t = setInterval(() => {
-      const s = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
-      setLeft(s);
-      router.refresh(); // pick up other people's votes, and the close
-    }, 2000);
     const tick = setInterval(() => setLeft(Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))), 500);
-    return () => { clearInterval(t); clearInterval(tick); };
-  }, [endsAt, router]);
+    return () => clearInterval(tick);
+  }, [endsAt]);
 
   const vote = (id: string) => start(async () => { await tieVoteAction(planId, id); router.refresh(); });
   const choose = (id: string) => start(async () => { await organiserChooseAction(planId, id); router.refresh(); });
