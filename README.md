@@ -79,3 +79,7 @@ All tunable numbers (deck size, radius, weights, ₹ per price level, limits) ar
 ## Demo mode on Vercel
 
 With no Supabase project, a Vercel deployment runs on a temporary demo database with no settings to add: data lives in the server's `/tmp`, and the session cookie is signed with a key derived from the deployment, so everyone signs in again after each deploy. Pages show a "Demo database" notice. `/tmp` belongs to one server instance and is wiped when it is recycled, so plans can vanish and requests that land on another instance won't see them. It is for trying Binged with a few friends; [SETUP.md](SETUP.md) replaces it with Supabase.
+
+## Try the demo (`/demo`)
+
+A button on the welcome page opens a two-minute guided tour with no sign-in: you are Asha, and Ravi and Meera are pretend friends who swipe on their own (`src/lib/demo.ts`). It builds a real deck with the same pool and matching code, then walks through swipe, shortlist, compare and winner, including the final vote when the friends disagree. It runs entirely in the browser and is a static page, so it works on Vercel with no database and saves nothing.

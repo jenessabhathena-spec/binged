@@ -9,8 +9,21 @@ const THRESHOLD = 90; // px of drag that counts as a swipe
 
 // Swipe right = yes, left = no. Also ✓ / ✕ buttons, the arrow keys, and undo for the last card.
 // Every swipe is saved straight away, so closing the tab and coming back resumes where you were.
-export function SwipeDeck({ planId, cards, alreadyDone, total }: { planId: string; cards: CardData[]; alreadyDone: number; total: number }) {
+export type DeckHandlers = {
+  swipe(placeId: string, liked: boolean): Promise<{ ok: boolean; error?: string }>;
+  undo(): Promise<{ ok: boolean }>;
+  done(): void; // called after the last card
+};
+
+// By default every swipe is saved on the server for a real plan. The demo passes its own handlers instead, so it
+// runs entirely in the browser.
+export function SwipeDeck({ planId, cards, alreadyDone, total, handlers }: { planId: string; cards: CardData[]; alreadyDone: number; total: number; handlers?: DeckHandlers }) {
   const router = useRouter();
+  const h: DeckHandlers = handlers ?? {
+    swipe: (placeId, liked) => swipeAction(planId, placeId, liked),
+    undo: () => undoSwipeAction(planId),
+    done: () => router.refresh(),
+  };
   const [index, setIndex] = useState(0);
   const [history, setHistory] = useState<{ id: string; liked: boolean }[]>([]);
   const [dx, setDx] = useState(0);
@@ -28,7 +41,7 @@ export function SwipeDeck({ planId, cards, alreadyDone, total }: { planId: strin
     busy.current = true;
     setError("");
     setLeaving(liked ? "yes" : "no");
-    const saved = swipeAction(planId, card.id, liked);
+    const saved = h.swipe(card.id, liked);
     await new Promise((r) => setTimeout(r, 180));
     setHistory((h) => [...h, { id: card.id, liked }]);
     setIndex((i) => i + 1);
@@ -37,13 +50,13 @@ export function SwipeDeck({ planId, cards, alreadyDone, total }: { planId: strin
     busy.current = false;
     const r = await saved;
     if (!r.ok) { setError(r.error === "Voting has closed" ? "Voting has closed." : "That swipe didn't save. Refreshing…"); router.refresh(); }
-    else if (index + 1 >= cards.length) router.refresh(); // that was the last card: show who's still swiping
+    else if (index + 1 >= cards.length) h.done(); // that was the last card
   }
 
   async function undo() {
     if (busy.current || history.length === 0) return;
     busy.current = true;
-    const r = await undoSwipeAction(planId);
+    const r = await h.undo();
     if (r.ok) { setHistory((h) => h.slice(0, -1)); setIndex((i) => Math.max(0, i - 1)); }
     busy.current = false;
   }

@@ -1,11 +1,10 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { Loading } from "@/components/Loading";
+import { ShortlistRow } from "@/components/ShortlistRow";
 import { StepShell } from "@/components/StepShell";
-import { priceLabel, ratingLabel } from "@/lib/cards";
 import { computeResults, getViewer } from "@/lib/group";
 import type { Ranked } from "@/lib/matching";
 import { requestTime } from "@/lib/now";
@@ -53,26 +52,9 @@ async function ResultsStep({ params }: { params: Promise<{ id: string }> }) {
     >
       <AutoRefresh everyMs={5000} />
       <ol className="space-y-3" data-testid="shortlist">
-        {ranking.shortlist.map((r, i) => <Row key={r.entry.place.id} r={r} rank={i + 1} swiped={swiped} yesNames={yesNames(r)} />)}
+        {ranking.shortlist.map((r, i) => <ShortlistRow key={r.entry.place.id} r={r} rank={i + 1} swiped={swiped} yesNames={yesNames(r)} />)}
       </ol>
       {missing.length > 0 && <p className="text-xs text-muted">{missing.map((m) => m.firstName).join(", ")} didn&apos;t swipe, so their votes aren&apos;t counted.</p>}
     </StepShell>
-  );
-}
-
-function Row({ r, rank, swiped, yesNames }: { r: Ranked; rank: number; swiped: number; yesNames: string[] }) {
-  const p = r.entry.place;
-  return (
-    <li className="flex gap-3 rounded-2xl border border-line bg-surface p-3">
-      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-soft">
-        {p.photo ? <Image src={p.photo.url} alt="" fill sizes="80px" className="object-cover" /> : <span aria-hidden className="grid h-full place-items-center text-2xl">🍽️</span>}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-bold leading-tight"><span className="text-muted">{rank}. </span>{p.name}</p>
-        <p className="truncate text-sm text-muted">{p.area} · {p.cuisines.join(", ")}</p>
-        <p className={`mt-1 text-sm font-medium ${r.full ? "text-ok" : ""}`}>{r.full ? "Everyone said yes ✓" : `${r.yesCount} of ${swiped} said yes`}</p>
-        <p className="text-xs text-muted">Yes: {yesNames.join(", ")} · Longest trip {r.entry.maxTravel} min{priceLabel(p.priceRange) ? ` · ${priceLabel(p.priceRange)}` : ""}{ratingLabel(p.rating, p.ratingCount) ? ` · ${ratingLabel(p.rating, p.ratingCount)}` : ""}</p>
-      </div>
-    </li>
   );
 }

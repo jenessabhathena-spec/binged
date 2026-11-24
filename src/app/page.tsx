@@ -15,6 +15,9 @@ export default function Welcome({ searchParams }: PageProps<"/">) {
       <Suspense fallback={<div className="h-14" aria-hidden />}>
         <SignInOrContinue searchParams={searchParams} />
       </Suspense>
+      <Link href="/demo" className="block rounded-2xl border border-line bg-surface py-3.5 text-center font-semibold" data-testid="try-demo">
+        Try the demo <span className="font-normal text-muted">(2 minutes, no sign-in)</span>
+      </Link>
       <p className="text-sm text-muted">We only use your area and preferences to find fair places for your group.</p>
       <p className="text-center text-xs text-muted">
         <Link href="/privacy" className="underline">Privacy</Link>
