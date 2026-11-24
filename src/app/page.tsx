@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { StepShell } from "@/components/StepShell";
 import { GoogleButton } from "@/components/GoogleButton";
+import { signOut } from "@/app/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
 
 export default function Welcome({ searchParams }: PageProps<"/">) {
@@ -31,9 +32,14 @@ async function SignInOrContinue({ searchParams }: { searchParams: Promise<Record
   const user = await getCurrentUser();
   if (user) {
     return (
-      <Link href="/profile" className="block rounded-2xl bg-brand py-3.5 text-center font-semibold text-brand-ink">
-        Continue as {user.profile.name || user.profile.email}
-      </Link>
+      <>
+        <Link href="/profile" className="block rounded-2xl bg-brand py-3.5 text-center font-semibold text-brand-ink">
+          Continue as {user.profile.name || user.profile.email}
+        </Link>
+        <form action={signOut} className="text-center">
+          <button className="text-sm text-muted underline" data-testid="sign-out">Not you? Sign out and start over</button>
+        </form>
+      </>
     );
   }
   return (

@@ -42,6 +42,7 @@ async function WinnerStep({ params }: { params: Promise<{ id: string }> }) {
     >
       <WinnerPanel outcome={outcome} voters={voters} yesNames={yesNames} participants={res.ranking.participants.length} plan={{ startsAt: plan.startsAt, partySize: plan.partySize }} />
       <Link href={`/plan/${id}/rate`} className="block text-center text-sm text-brand underline">After the meal: how was it?</Link>
+      {viewer.user && <Link href="/home" className="block text-center text-sm text-brand underline">Back to home (plan another dinner, or sign out)</Link>}
     </StepShell>
   );
 }
